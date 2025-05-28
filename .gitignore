@@ -28,3 +28,6 @@ logs/
 .prettierrc
 eslint.config.json
 eslint.config.js
+tasks.db
+tasks.db-shm
+tasks.db-wal
