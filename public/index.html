@@ -30,6 +30,10 @@
         });
       });
 
+      socket.on('newTask', function (task) {
+        alert('Nueva tarea creada: ' + task.title);
+      });
+
       document.getElementById('add-task-form').onsubmit = function (e) {
         e.preventDefault();
         fetch('/tasks', {

@@ -2,9 +2,7 @@ const express = require('express');
 const router = express.Router();
 const model = require('./endpoint');
 
-// Accept io as a parameter so you can broadcast
 module.exports = (io) => {
-  // Helper to broadcast all tasks
   function broadcastTasks() {
     const tasks = model.getTasks();
     io.emit('tasks', tasks);
@@ -27,12 +25,14 @@ module.exports = (io) => {
     try {
       const result = model.addTask(title, description);
       broadcastTasks();
-      res.status(201).json({
+      const createdTask = {
         id: result.lastInsertRowid,
         title,
         description,
         status: 'pending',
-      });
+      };
+      io.emit('newTask', createdTask);
+      res.status(201).json(createdTask);
     } catch (err) {
       res.status(500).json({ error: 'Database error', details: err.message });
     }

@@ -17,22 +17,8 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  socket.on('event message', (msg) => {
-    io.emit('was', msg);
-  });
-});
-
-// app.listen(3000),
-//   () => {
-//     console.log('Server express is running at port', PORT);
-//   };
-
-io.on('connection', (socket) => {
   const endpoint = require('./endpoint');
   socket.emit('tasks', endpoint.getTasks());
-  socket.on('event message', (msg) => {
-    io.emit('was', msg);
-  });
 });
 
 server.listen(3000, () => {
