@@ -46,6 +46,7 @@ module.exports = (io) => {
         return res.status(404).json({ error: 'Task not found' });
       }
       broadcastTasks();
+      io.emit('deleTask', { id });
       res.json({ message: 'Task deleted successfully' });
     } catch (err) {
       res.status(500).json({ error: 'Internal server error' });
@@ -64,6 +65,8 @@ module.exports = (io) => {
         return res.status(404).json({ error: 'Task not found' });
       }
       broadcastTasks();
+      const updatedTask = model.getTasks().find((t) => t.id == id);
+      io.emit('updateTask', { id: updatedTask.id, status: updatedTask.status });
       res.json({ message: 'Task status updated successfully' });
     } catch (err) {
       res.status(500).json({ error: 'Internal server error' });

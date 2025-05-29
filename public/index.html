@@ -34,6 +34,10 @@
         alert('Nueva tarea creada: ' + task.title);
       });
 
+      socket.on('updateTask', function (data) {
+        alert('Task updated! ID: ' + data.id + ' (now: ' + data.status + ')');
+      });
+
       document.getElementById('add-task-form').onsubmit = function (e) {
         e.preventDefault();
         fetch('/tasks', {
