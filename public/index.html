@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Task Sync Example</title>
+  </head>
+  <body>
+    <h1>Tasks</h1>
+    <ul id="task-list"></ul>
+
+    <h2>Add Task</h2>
+    <form id="add-task-form">
+      <input id="title" placeholder="Title" required />
+      <input id="description" placeholder="Description" />
+      <button type="submit">Add</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      const list = document.getElementById('task-list');
+
+      socket.on('tasks', function (tasks) {
+        list.innerHTML = '';
+        tasks.forEach(function (task) {
+          const li = document.createElement('li');
+          li.innerHTML = `<b>${task.title}</b> (${task.status}) - ${task.description || ''}
+          <button onclick="finishTask(${task.id})">Finish</button>
+          <button onclick="deleteTask(${task.id})">Delete</button>`;
+          list.appendChild(li);
+        });
+      });
+
+      document.getElementById('add-task-form').onsubmit = function (e) {
+        e.preventDefault();
+        fetch('/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+          }),
+        });
+        this.reset();
+      };
+
+      function finishTask(id) {
+        fetch('/tasks/' + id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'finished' }),
+        });
+      }
+
+      function deleteTask(id) {
+        fetch('/tasks/' + id, {
+          method: 'DELETE',
+        });
+      }
+    </script>
+  </body>
+</html>
