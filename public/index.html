@@ -24,7 +24,7 @@
         tasks.forEach(function (task) {
           const li = document.createElement('li');
           li.innerHTML = `<b>${task.title}</b> (${task.status}) - ${task.description || ''}
-          <button onclick="finishTask(${task.id})">Finish</button>
+          <button onclick="finishTask(${task.id})">Done</button>
           <button onclick="deleteTask(${task.id})">Delete</button>`;
           list.appendChild(li);
         });
@@ -55,7 +55,7 @@
         fetch('/tasks/' + id, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'finished' }),
+          body: JSON.stringify({ status: 'done' }),
         });
       }
 

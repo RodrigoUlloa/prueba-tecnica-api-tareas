@@ -1,16 +1,16 @@
-const express = require('express');
-const router = express.Router();
-const model = require('./endpoint');
+import { Router } from 'express';
+const router = Router();
+import { getTasks, addTask, deleteTask, updateTaskStatus } from './queries.js';
 
-module.exports = (io) => {
+export function getRouter(io) {
   function broadcastTasks() {
-    const tasks = model.getTasks();
+    const tasks = getTasks();
     io.emit('tasks', tasks);
   }
 
-  router.get('/tasks', (req, res) => {
+  router.get('/tasks', (_req, res) => {
     try {
-      const tasks = model.getTasks();
+      const tasks = getTasks();
       res.json(tasks);
     } catch (err) {
       res.status(500).json({ error: 'Internal server error' });
@@ -18,12 +18,20 @@ module.exports = (io) => {
   });
 
   router.post('/tasks', (req, res) => {
-    const { title, description } = req.body;
-    if (!title) {
-      return res.status(400).json({ error: 'Title is required' });
+    const { title, description, id, status } = req.body;
+    if (!title && !description) {
+      return res
+        .status(400)
+        .json({ error: 'Title and description is required' });
+    }
+    if (id || status) {
+      return res.status(400).json({
+        error:
+          'Invalid request: id and status should not be included in POST request',
+      });
     }
     try {
-      const result = model.addTask(title, description);
+      const result = addTask(title, description);
       broadcastTasks();
       const createdTask = {
         id: result.lastInsertRowid,
@@ -40,8 +48,11 @@ module.exports = (io) => {
 
   router.delete('/tasks/:id', (req, res) => {
     const { id } = req.params;
+    if (isNaN(id) || !Number.isInteger(Number(id))) {
+      return res.status(400).json({ error: 'Task ID must be a valid number' });
+    }
     try {
-      const result = model.deleteTask(id);
+      const result = deleteTask(id);
       if (result.changes === 0) {
         return res.status(404).json({ error: 'Task not found' });
       }
@@ -56,22 +67,23 @@ module.exports = (io) => {
   router.put('/tasks/:id', (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
-    if (!status) {
-      return res.status(400).json({ error: 'Status is required' });
+    if (!status || status !== 'done') {
+      return res.status(400).json({
+        error: 'Status state incorrect "done"',
+      });
     }
     try {
-      const result = model.updateTaskStatus(id, status);
+      const result = updateTaskStatus(id, status);
       if (result.changes === 0) {
         return res.status(404).json({ error: 'Task not found' });
       }
       broadcastTasks();
-      const updatedTask = model.getTasks().find((t) => t.id == id);
+      const updatedTask = getTasks().find((t) => t.id == id);
       io.emit('updateTask', { id: updatedTask.id, status: updatedTask.status });
       res.json({ message: 'Task status updated successfully' });
     } catch (err) {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
-
   return router;
-};
+}

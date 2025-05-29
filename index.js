@@ -1,24 +1,24 @@
-const express = require('express');
-const { Server } = require('socket.io');
-const { createServer } = require('http');
-const db = require('./db');
+import express, { json } from 'express';
+const __dirname = import.meta.dirname;
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import { getRouter } from './routes.js';
+import { getTasks } from './queries.js';
+import { closeDB } from './db.js';
 
 const app = express();
-const server = createServer(app);
+export const server = createServer(app);
 const io = new Server(server);
+const router = getRouter(io);
 
-const routes = require('./routes')(io);
-
-app.use(express.json());
-
-app.use('/', routes);
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+app.use(json());
+app.use('/', router);
+app.get('/', (_req, res) => {
+  res.sendFile(`${__dirname}/public/index.html`);
 });
 
 io.on('connection', (socket) => {
-  const endpoint = require('./endpoint');
-  socket.emit('tasks', endpoint.getTasks());
+  socket.emit('tasks', getTasks());
 });
 
 server.listen(3000, () => {
@@ -26,6 +26,6 @@ server.listen(3000, () => {
 });
 
 process.on('SIGINT', () => {
-  db.close();
+  closeDB();
   process.exit(0);
 });

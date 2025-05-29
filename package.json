@@ -4,10 +4,10 @@
   "description": "technical-test",
   "license": "ISC",
   "author": "rodrigo ulloa",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "env $(cat .env | xargs) node --watch ./index.js",
+    "start": "node --watch ./index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint --config eslint.config.js ."
   },
